@@ -7,17 +7,17 @@ a3-plvines-djpeter
 2. Peter Henry peter@cs.washington.edu
 
 ## Visualization of Artist Similarities from the Million Song Dataset
-Shows the selected artist and related artists,
-"sorted" by decade, with the artist placed at the center of their
-career's timeline and lines stretching out to indicate when they
-started and stopped making music.
+
+Our visualization allows users to browse artists according to similarity in the Million Song Dataset.
+The artist name is placed at the center of their
+career's timeline, with lines stretching out to indicate when they
+started and stopped making music (according to the songs in the Dataset).
 Hovering over an artist displays a tooltip with a few details and a
-list of songs, one per year they released an album. These songs are
+list of songs, one per year. These songs are
 links to youtube queries, so clicking on one should take you to a list
-of youtube videos containing the song.
+of youtube videos containing the song if such videos exist.
 Finally, we allow the user to sort the similar artists vertically by
-either familiarity or hotttnesss, both scores calculated by the
-dataset creators.
+either familiarity or hotttnesss, both of which are scores present in the database, originally gleaned from EchoNest as described by the Dataset's creators.  
 
 ## Running Instructions
 
