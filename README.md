@@ -8,7 +8,7 @@ a3-plvines-djpeter
 
 ## Visualization of Artist Similarities from the Million Song Dataset
 
-Our visualization allows users to browse artists according to similarity in the Million Song Dataset.
+Our visualization allows users to browse artists according to similarity in the Million Song Dataset (http://labrosa.ee.columbia.edu/millionsong/).
 The artist name is placed at the center of their
 career's timeline, with lines stretching out to indicate when they
 started and stopped making music (according to the songs in the Dataset).
