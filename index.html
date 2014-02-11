@@ -1,0 +1,422 @@
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+    <meta charset="utf-8">
+    <title>Demo</title>
+    <script type="text/javascript" src="d3-master/d3.js"></script>
+    <script type="text/javascript" src="d3-master/d3.min.js"></script>
+
+    </head>
+    <body>
+    <style>
+    body{
+	background-color:#EEF;
+    }
+    .name{
+	cursor: pointer;
+	cursor: hand;
+    }
+div.first{
+	width:650px;
+    
+    }
+</style>
+
+    <script src="jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="jquery.tipsy.js"></script>
+    <link href="tipsy.css" rel="stylesheet" type="text/css" /
+
+<div>
+<h1> Visualization of Artist Similarities </h1>
+    <div class="first">
+
+Paul Vines<br>
+Peter Henry<br>
+CSE512<br><br>
+
+This visualization allows you to explore the relationships between the artists in the <a href="http://labrosa.ee.columbia.edu/millionsong/">Million Song Dataset</a>. Enter an artist name to begin.
+<ul>
+<li>The visualization shows the artist selected and a selection of other artists categorized as similar by the Million Song Dataset creators, according to the <a href="http://developer.echonest.com/docs/v4/artist.html#similar">EchoNest API</a>.  These artists are grouped into different decades based on when they made their music. The thin lines extending from the boxes represent the span of the artists career.</li>
+<li>By clicking on an artist you can remake the visualization for that artist.</li>
+<li>    By hovering over an artist you can see more details, including links to songs selected from different times in their career.</li>
+<li>By default, the artists are retrieved and sorted according to <a href="http://developer.echonest.com/docs/v4/artist.html#familiarity">EchoNext artist familiarity</a>.  You may alternately retrieve and sort artists according to <a href="http://developer.echonest.com/docs/v4/artist.html#hotttnesss">EchoNest artist "hotttnesss"</a> instead.</li>
+</ul>
+</div>
+
+<div>
+Artist: <input type="string" id="artist" value="" onchange="submit_query_from_field()"><br>
+
+    <form action="">
+ <input type="checkbox" name="sort_by" value="false" onclick="hotttnesss_changed()"> Sort by Artist Hotttnesss instead of Familiarity?<br>
+</form>
+</div>
+    <script>
+// Global display vars
+var selected_artist = null;
+var sort_by_hotttnesss = false;
+
+var bg_color = "rgba(0, 0, 200, 0.3)";
+var border_color = "rgba(120, 120, 120, 0.3)";
+var ellipse_color = "rgba(0,0,100,0.8)";
+var selected_color = "rgba(0,100,255,1)";
+var span_color = "rgba(0,40,120,0.4)";
+var selected_span_color = "rgba(0,40,255,0.6)";
+
+
+var w = 1000;
+var padding = 35;
+var padded_w = w + (padding * 2);
+var h = 200;
+
+// BORDER/BACKGROUND
+var svg = d3.select("body").append("svg");
+svg.attr("width", padded_w).attr("height", h);
+var rect = svg.append("rect");
+rect.attr("height", h).attr("width", padded_w).attr("fill", bg_color).attr("stroke", border_color).attr("stroke-width", 5);
+
+
+var art_in_decade = 30; // should depend on data?
+var y_rad = h / (art_in_decade * 4); // or could be constant
+var y_margin = 30;
+var y_buffer = 2 * y_rad;
+var dur = 750;
+
+var year_min = 1950;
+var year_max = 2010;
+var decade_min = Math.floor((year_min - 1950) / 10);
+var decade_max = Math.floor((year_max - 1950) / 10);
+var years_per_div = 10; // decades
+var num_decades = decade_max - decade_min -1; 
+
+var div_w = w / (num_decades + 1);
+var x_rad = div_w / 4;
+
+function hotttnesss_changed(){
+    sort_by_hotttnesss = !sort_by_hotttnesss;
+    requery();
+}
+
+function partialdiff(a,b){
+    return (a + ((b - a)/2));
+}
+
+function x_coord(year){
+    return (decadify(year) * (div_w)) + padding;
+}
+
+function center_x_coord(artist){
+    return decadify(partialdiff(artist.year_first_song, artist.year_last_song)) * div_w + padding;
+}
+
+
+function decadify(year){
+    return (year - 1950) / years_per_div;
+}
+
+
+display_data = function(){
+    // DIVIDERS
+    for (var i = 0; i <= num_decades + 1; i++){
+	svg.append("line")
+	    .attr("class", "decade_div")
+	    .attr("stroke", border_color)
+	    .attr("stroke-width", 5)
+	    .attr("x1", (i) * div_w + padding)
+	    .attr("y1", 0)
+	    .attr("x2", (i) * div_w + padding)
+	    .attr("y2", h);
+	svg.append("text")
+	    .attr("class", "decade")
+	    .text(year_min + (i * years_per_div) + "'s")
+	    .attr("x", (i + 0.5) * div_w + padding)
+	    .attr("y", 15)
+	    .attr("fill", "white")
+	    .attr("text-anchor", "middle")
+	    .attr("font-size", "12pt");
+	svg.append("text")
+	    .attr("class", "decade2")
+	    .text(year_min + (i * years_per_div) + "'s")
+	    .attr("x", (i + 0.5) * div_w + padding)
+	    .attr("y", h - 5)
+	    .attr("fill", "white")
+	    .attr("text-anchor", "middle")
+	    .attr("font-size", "12pt");
+    }
+
+}
+
+
+select_new_node = function(artist){
+    selected_artist = artist;
+    document.getElementById("artist").value = selected_artist.artist_name;
+    submit_query(null);
+}
+
+get_song_links = function(song_list){
+    result = '';
+
+    for(i in song_list){
+	if (song_list[i] !== null){
+	    result += '<a href="http://www.youtube.com/results?search_query=' + song_list[i].artist_name + " " + song_list[i].title + '" target="_blank">' + song_list[i].title + '</a><br>';
+	} 
+    }
+    return result;
+}
+
+
+update = function(dataset){
+var w = 1000;
+var padding = 35;
+var padded_w = w + (padding * 2);
+var h = dataset[0].length * 20 + y_margin + 10;
+
+// BORDER/BACKGROUND
+    svg.attr("width", padded_w).attr("height", h);
+    rect.attr("height", h).attr("width", padded_w).attr("fill", bg_color).attr("stroke", border_color).attr("stroke-width", 5);
+
+
+    y_rad = 8;
+    y_margin = 30;
+    y_buffer = 2 * y_rad + 4;
+
+    // DIVIDERS
+	svg.selectAll(".decade_div")
+	    .attr("stroke", border_color)
+	    .attr("stroke-width", 5)
+	    .attr("y1", 0)
+	    .attr("y2", h);
+    svg.selectAll(".decade2")
+	.attr("y", h - 5);
+
+
+
+    var grps = svg.selectAll("g")
+    	.data(dataset);
+
+    grps
+    	.enter()
+    	.append("g");
+//	.attr("transform", function(d, i) {return "translate(0, " + ((i) * (2 * y_rad)) + ")";})
+
+    var spans = grps.selectAll("line").data(function(d) {return d;}, function(d){return d.artist_id;});
+
+    var ellipses = grps.selectAll('rect')
+    	.data(function(d) {return d;}, function(d){return d.artist_id;});
+
+    var text = grps.selectAll("text")
+	.data(function(d) {return d;}, function(d){return d.artist_id;});
+
+    // ENTER
+    spans.enter()
+	.append('line')
+	.attr("class", "span")
+
+    ellipses
+    	.enter()
+    	.append('rect')
+
+    text.enter().append("text")    
+    	.attr("class", "name")
+
+    // UPDATE
+    spans
+	.attr("class", "span")
+	.attr("stroke-width", 1)
+    	.attr("stroke", function(d) 
+    	      { 
+    		  if (d.artist_id === selected_artist.artist_id){ 
+    		      return selected_span_color;
+    		  }
+    		  else {
+    		      return span_color;
+    		  }})
+	.attr("x1", function(d) {return x_coord(d.year_first_song);})
+	.attr("y1", 0)
+	.attr("y2", 0)
+	.attr("x2", function(d) {return x_coord(d.year_first_song);})
+	.transition().duration(dur)
+	.attr("y2", function(d,i) {return i*y_buffer + y_margin;})
+	.attr("y1", function(d,i) {return i*y_buffer + y_margin;})
+	.attr("x2", function(d) {return x_coord(d.year_last_song);});
+
+    ellipses
+    	.attr("width", 2*x_rad)
+    	.attr("height", 2 *y_rad)
+	.attr("stroke", "rgba(255,255,255,0.8)")
+    	.attr("fill", function(d) 
+    	      { 
+    		  if (d.artist_id === selected_artist.artist_id){ 
+    		      return selected_color;
+    		  }
+    		  else {
+    		      return ellipse_color;
+    		  }})
+    	.on("click", function (d) {
+    	    select_new_node(d);})
+    	.attr("x", function(d, i) {return center_x_coord(d) - x_rad;})
+	.attr("y", -y_rad)
+    	.transition().duration(dur)
+    	.attr("x", function(d, i) {return center_x_coord(d) - x_rad;})
+	.attr("y", function(d, i) {return i*y_buffer + y_margin - y_rad;});
+
+    text.attr("class", "name")
+    	.text(function(d) {return d.artist_name;})
+    	.attr("fill", "white")
+    	.attr("text-anchor", "middle")
+    	.on("click", function (d) {
+    	    select_new_node(d);})
+    	.attr("x", function(d, i) {return center_x_coord(d);})
+    	.attr("y", -y_rad)
+    	.transition().duration(dur)
+    	.attr("x", function(d, i) {return center_x_coord(d);})
+    	.attr("y", function(d, i) {return (i * y_buffer) + (y_rad /2) + y_margin;})
+	.text(function(d) {return d.artist_name.substring(0,12);})
+    	.attr("font-size", function(d) {return "9pt";});
+
+    $(".name").tipsy({ 
+        gravity: 'w', 
+        html: true, 
+	delayIn: 500,
+	delayOut: 1500,
+	opacity: .9,
+	title: function() {
+	    var d = this.__data__;
+            return '' + d.artist_name + '(' + d.year_first_song + '-' + d.year_last_song + ')<br>'
+		+ get_song_links(d.top_songs);
+
+        }
+    });
+
+    // EXIT
+    ellipses.exit()
+    	.transition().duration(dur)
+    	.attr("y", 2 * h)
+    	.attr("fill-opacity", 0.3)
+    	.remove();
+
+    spans.exit()
+    	.transition().duration(dur)
+    	.attr("y1", 2*h)
+    	.attr("y2", 2*h)
+    	.attr("x2", function(d) {return x_coord(d.year_first_song)})
+    	.attr("stroke-opacity", 0.3)
+    	.remove();
+
+    text.exit()
+    	.transition().duration(dur)
+    	.attr("y", 2 * h)
+    	.attr("fill-opacity", 0.3)
+    	.remove();
+}
+
+
+compare = function(a, b){
+    return a.artist_id === b.artist_id;
+}
+contains = function(array, item){
+    for (a in array){
+	if (compare(a, item)){
+	    return true;
+	}
+    }
+    return false;
+}
+join = function(s1, s2){
+    s3 = [];
+    for (a in s1){
+	if (contains(s2, a)){
+	    s3.push(a);
+	}
+    }
+
+    return s3;
+}
+
+
+display_data([]);
+
+round_to_decade = function(y){
+    return Math.floor((y - year_min)/ 10);
+}
+
+bin_by_decade = function(dataset){
+    bins = [];
+    for (var i = 0; i < num_decades + 1; i++){
+	bins.push([]);
+    }
+    for ( i in dataset){
+	bins[0].push(dataset[i]);
+    }
+    // for (i in dataset){
+    // 	var bin = round_to_decade(partialdiff(dataset[i].year_first_song, dataset[i].year_last_song));
+	
+    // 	if (bin >= 0 && bin <= 5 && bins[bin].length < 38 && dataset[i].artist_name.length < 25){
+    // 	    bins[bin].push(dataset[i]);
+    // 	}
+    // }
+    return bins;
+}
+
+submit_query_from_field = function(){
+    submit_query(document.getElementById("artist").value);
+}
+
+function requery(){
+    if (selected_artist === null){
+	submit_query_from_field();
+    }
+    else{
+	submit_query();
+    }
+}
+
+submit_query = function(artist){
+    var artist_to_search = "";
+    if (artist === null || artist === undefined){
+	artist_to_search = selected_artist.artist_name;
+    }
+    else{
+	artist_to_search = artist;
+    }
+    // skip if no artist is typed
+    if (artist_to_search === ""){
+	return;
+    }
+    $(document).ready(function(){
+	$.get("cgi-bin/query_cgi.py",
+	      {
+		  query: "search",
+		  search: artist_to_search,
+	    	  limit: 1
+	      },
+	      function(result){
+		  if (artist !== null){
+		      selected_artist = result[0];
+		  }
+		  var sort_by_param = sort_by_hotttnesss ? "artist_hotttnesss" : "artist_familiarity";
+		  $.get("cgi-bin/query_cgi.py",
+	    	      	{
+			    query: "similar",
+		      	    artist_id: selected_artist.artist_id,
+			    order_by: "" + sort_by_param,
+	    	      	    year_min: 1950,
+	    	      	    year_max: 2010,
+	    	      	    limit: 100
+	    	      	},
+	    	      	function(result){
+			    result.splice(0,0,selected_artist);
+			    
+			    bins = bin_by_decade(result);
+
+			    update(bins);
+  	    		});
+
+	      });
+    });
+}
+
+</script>
+</div>
+</body>
+    </html>
+
