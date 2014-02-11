@@ -1,4 +1,34 @@
-Description of Storyboards:
+a3-plvines-djpeter  
+===============
+
+## Team Members
+
+1. Paul Vines plvines@cs.washington.edu
+2. Peter Henry peter@cs.washington.edu
+
+## Visualization of Artist Similarities from the Million Song Dataset
+Shows the selected artist and related artists,
+"sorted" by decade, with the artist placed at the center of their
+career's timeline and lines stretching out to indicate when they
+started and stopped making music.
+Hovering over an artist displays a tooltip with a few details and a
+list of songs, one per year they released an album. These songs are
+links to youtube queries, so clicking on one should take you to a list
+of youtube videos containing the song.
+Finally, we allow the user to sort the similar artists vertically by
+either familiarity or hotttnesss, both scores calculated by the
+dataset creators.
+
+## Running Instructions
+
+Access our visualization at http://patillo.cs.washington.edu/~cse512
+
+You may also download this repository and run our code, however it requires some large database files. These can be obtained by visiting http://labrosa.ee.columbia.edu/millionsong/pages/getting-dataset and downloading the three SQLite files and placing them in cgi-bin/sqlite/ in the repository.
+
+
+## Story Board
+
+[link to our storyboard pdf file](storyboard.pdf?raw=true) here.  
 The idea here is to let the user browse for artists similar to artists
 they already like, but potentially in different decades. 
 This would both allow for a nifty visualization of music history (such
@@ -14,20 +44,8 @@ The idea was to start with one artist and then step away from that
 artist along the similarity graph, showing each link with a line
 between the source artist and the similarity.
 
-Description of the Final Visualization:
-The final visualization shows the selected artist and related artists,
-"sorted" by decade, with the artist placed at the center of their
-career's timeline and lines stretching out to indicate when they
-started and stopped making music.
-Hovering over an artist displays a tooltip with a few details and a
-list of songs, one per year they released an album. These songs are
-links to youtube queries, so clicking on one should take you to a list
-of youtube videos containing the song.
-Finally, we allow the user to sort the similar artists vertically by
-either familiarity or hotttnesss, both scores calculated by the
-dataset creators.
 
-Changes:
+### Changes between Storyboard and the Final Implementation
 The original storyboard did not include the career span of the
 artists. We thought this would be a more interesting view, and allow
 users to better understand the data and get a better feel for which
@@ -45,12 +63,14 @@ the graph was clear enough even with all decades shown all the time
 and the X axis was not the limiting factor in the
 visualization.
 
-Development Process:
+
+
+## Development Process
 {Paul} I wrote all of the visualization front-end from sending the
 queries to the python back-end to drawing the D3/SVG objects and user
 interface buttons. I also produced the storyboard. I would say I
 worked approximately 28 hours on this assignment. I would say
-development was about equal.
+development was about equal. Trying to make D3 separate data and draw it correctly was the most difficult, particularly time spend trying to make it draw lines between elements. Also, trying to make the tooltips sticky.
 
 
 {Peter} I configured a machine to serve database query results as JSON
@@ -61,13 +81,3 @@ files which were downloaded from the Million Song Dataset website. I
 would agree that we contributed equally to this project.  Configuring
 Apache and getting a handle on Python and JSON was a bit trickier than
 I would have guessed.
-
-
-To Run:
-navigate to: http://patillo.cs.washington.edu/~cse512/
-
-If you want to run it on your own computer you will need to download
-the large SQLite database files from
-http://labrosa.ee.columbia.edu/millionsong/pages/getting-dataset
-and put them in the cgi-bin/sqlite/
-folder. 
