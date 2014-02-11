@@ -80,4 +80,4 @@ parameters to Python functions, and wrapping custom SQL queries to the SQLite da
 files which were downloaded from the Million Song Dataset website. I
 would agree that we contributed equally to this project.  Configuring
 Apache and getting a handle on Python and JSON was a bit trickier than
-I would have guessed.
+I would have guessed.  I probalby spent roughly 15-20 hours on this assignment.
