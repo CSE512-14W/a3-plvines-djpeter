@@ -28,8 +28,9 @@ You may also download this repository and run our code, however it requires some
 
 ## Story Board
 
-[link to our storyboard pdf file](storyboard.pdf?raw=true) here.  
-The idea here is to let the user browse for artists similar to artists
+[link to our storyboard pdf file](storyboard.pdf?raw=true)
+
+The motivating idea is to let the user browse for artists similar to artists
 they already like, but potentially in different decades. 
 This would both allow for a nifty visualization of music history (such
 as seeing clusters of bands of a certain type coming in in a wave) and
@@ -46,10 +47,11 @@ between the source artist and the similarity.
 
 
 ### Changes between Storyboard and the Final Implementation
+
 The original storyboard did not include the career span of the
 artists. We thought this would be a more interesting view, and allow
 users to better understand the data and get a better feel for which
-bands were really long lasting and which were only 1 (or a few) hit
+bands were really long lasting and which were only one (or a few) hit
 wonders. 
 Additionally, we discarded the idea of lines linking the artists, both
 to allow showing the date range with lines and to avoid the clutter
